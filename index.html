@@ -1,0 +1,1135 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusNews | Global News Portal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* =========================================
+           1. CSS VARIABLES & RESET
+           ========================================= */
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #ec4899;
+            --accent-color: #8b5cf6;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --nav-bg: rgba(15, 23, 42, 0.85);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* =========================================
+           2. ANIMATIONS
+           ========================================= */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =========================================
+           3. NAVIGATION
+           ========================================= */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--nav-bg);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            border-bottom: var(--glass-border);
+            transition: var(--transition);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links li {
+            position: relative;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-links li::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: var(--primary-color);
+            transition: width 0.3s;
+        }
+
+        .nav-links li:hover::after {
+            width: 100%;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .search-bar {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--bg-color);
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            transition: var(--transition);
+        }
+
+        .search-bar:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-main);
+            margin-left: 10px;
+            width: 150px;
+        }
+
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            background: var(--primary-color);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px var(--primary-color);
+        }
+
+        .theme-toggle {
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-main);
+        }
+
+        /* =========================================
+           4. HERO SECTION
+           ========================================= */
+        header {
+            margin-top: 80px;
+            padding: 4rem 5%;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(236, 72, 153, 0.1));
+            border-bottom-left-radius: 50px;
+            border-bottom-right-radius: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .category-filters {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        .filter-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--text-muted);
+            color: var(--text-main);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            opacity: 0.7;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        /* =========================================
+           5. NEWS GRID
+           ========================================= */
+        .container {
+            padding: 4rem 5%;
+            flex: 1; /* Pushes footer down */
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .news-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .news-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-image {
+            height: 200px;
+            width: 100%;
+            background-color: #ddd;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .news-card:hover .card-image img {
+            transform: scale(1.1);
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-date {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-desc {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(107, 114, 128, 0.1);
+            padding-top: 1rem;
+        }
+
+        .read-more {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--transition);
+        }
+
+        .read-more:hover {
+            gap: 10px;
+        }
+
+        /* =========================================
+           6. LOGIN / SIGNUP MODAL
+           ========================================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .auth-container {
+            background: var(--card-bg);
+            width: 400px;
+            padding: 2.5rem;
+            border-radius: 20px;
+            position: relative;
+            transform: scale(0.8);
+            transition: var(--transition);
+            border: var(--glass-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-overlay.active .auth-container {
+            transform: scale(1);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(107, 114, 128, 0.1);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .auth-tab.active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: 1px solid rgba(107, 114, 128, 0.2);
+            background: var(--bg-color);
+            color: var(--text-main);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .auth-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Error/Success Messages */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            transform: translateY(100px);
+            transition: var(--transition);
+            z-index: 3000;
+            box-shadow: var(--shadow);
+        }
+        .toast.success { background: #10b981; }
+        .toast.error { background: #ef4444; }
+        .toast.show { transform: translateY(0); }
+
+        /* =========================================
+           7. SKELETON LOADING
+           ========================================= */
+        .skeleton {
+            background: linear-gradient(90deg, var(--card-bg) 25%, var(--bg-color) 50%, var(--card-bg) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* =========================================
+           8. FOOTER STYLES
+           ========================================= */
+        footer {
+            background: var(--card-bg);
+            padding: 4rem 5% 2rem;
+            margin-top: 4rem;
+            border-top: var(--glass-border);
+            position: relative;
+            box-shadow: 0 -10px 20px -10px rgba(0,0,0,0.05);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .footer-brand p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+            transition: var(--transition);
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .social-icon:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-5px) rotate(360deg);
+        }
+
+        .footer-links h3 {
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: var(--transition);
+            display: inline-block;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .newsletter-form {
+            position: relative;
+        }
+
+        .newsletter-form input {
+            width: 100%;
+            padding: 1rem;
+            padding-right: 50px;
+            border-radius: 10px;
+            border: 1px solid rgba(107, 114, 128, 0.2);
+            background: var(--bg-color);
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .newsletter-btn {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            bottom: 5px;
+            width: 40px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .newsletter-btn:hover {
+            transform: scale(0.9);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(107, 114, 128, 0.1);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.5rem; }
+            .nav-links { display: none; } 
+            .search-bar input { width: 100px; }
+            .auth-container { width: 90%; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">
+            <i class="fas fa-bolt"></i> NexusNews
+        </div>
+        <ul class="nav-links">
+            <li onclick="app.filterNews('general')">Home</li>
+            <li onclick="app.filterNews('technology')">Tech</li>
+            <li onclick="app.filterNews('business')">Business</li>
+            <li onclick="app.filterNews('science')">Science</li>
+        </ul>
+        <div class="nav-controls">
+            <div class="search-bar">
+                <i class="fas fa-search" style="color: var(--text-muted)"></i>
+                <input type="text" id="searchInput" placeholder="Search news...">
+            </div>
+            <div class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </div>
+            <button class="btn" id="loginBtn">Login</button>
+            <div id="userProfile" style="display: none; align-items: center; gap: 10px; cursor: pointer;">
+                <div style="width: 35px; height: 35px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <span id="userNameDisplay" style="font-weight: 600;">User</span>
+                <i class="fas fa-sign-out-alt" id="logoutBtn" style="color: var(--text-muted);"></i>
+            </div>
+        </div>
+    </nav>
+
+    <header>
+        <div class="floating-shapes"></div>
+        <h1>Discover the World <br> <span style="color: var(--primary-color)">Through Nexus</span></h1>
+        <p>Your daily source for curated, high-quality global news. Stay informed with the latest breaks in technology, business, and science.</p>
+        
+        <div class="category-filters">
+            <button class="filter-btn active" data-category="general">All</button>
+            <button class="filter-btn" data-category="technology">Technology</button>
+            <button class="filter-btn" data-category="business">Business</button>
+            <button class="filter-btn" data-category="sports">Sports</button>
+            <button class="filter-btn" data-category="entertainment">Entertainment</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="news-grid" id="newsGrid">
+            </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h2><i class="fas fa-bolt"></i> NexusNews</h2>
+                <p>Empowering the world with truth. We bring you the latest verified news from across the globe, focusing on technology, science, and the economy.</p>
+                <div class="social-links">
+                    <div class="social-icon"><i class="fab fa-twitter"></i></div>
+                    <div class="social-icon"><i class="fab fa-facebook-f"></i></div>
+                    <div class="social-icon"><i class="fab fa-instagram"></i></div>
+                    <div class="social-icon"><i class="fab fa-linkedin-in"></i></div>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <h3>Categories</h3>
+                <ul>
+                    <li><a href="#" onclick="app.filterNews('technology')">Technology</a></li>
+                    <li><a href="#" onclick="app.filterNews('business')">Business</a></li>
+                    <li><a href="#" onclick="app.filterNews('science')">Science</a></li>
+                    <li><a href="#" onclick="app.filterNews('sports')">Sports</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h3>Company</h3>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h3>Newsletter</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem;">Subscribe to get the latest news updates directly to your inbox.</p>
+                <form class="newsletter-form" id="newsletterForm">
+                    <input type="email" placeholder="Your email address" required>
+                    <button type="submit" class="newsletter-btn"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="copyright">
+            <p>&copy; 2024 NexusNews Portal. All rights reserved. Designed with HTML, CSS & JS.</p>
+        </div>
+    </footer>
+
+    <div class="modal-overlay" id="authModal">
+        <div class="auth-container">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Login</div>
+                <div class="auth-tab" data-tab="signup">Sign Up</div>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPass" required>
+                </div>
+                <button type="submit" class="auth-btn">Log In</button>
+            </form>
+
+            <form id="signupForm" style="display: none;">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signupName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPass" required>
+                </div>
+                <button type="submit" class="auth-btn" style="background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Message here</div>
+
+    <script>
+        /* =========================================
+           JAVASCRIPT LOGIC
+           ========================================= */
+
+        // 1. STATE MANAGEMENT
+        const state = {
+            currentUser: JSON.parse(localStorage.getItem('nexus_user')) || null,
+            theme: localStorage.getItem('nexus_theme') || 'light',
+            currentCategory: 'general',
+            articles: []
+        };
+
+        // 2. MOCK DATA (Fallback for No API Key)
+        // Note: Real news APIs like newsapi.org often block localhost calls on free plans (CORS).
+        // This simulates a successful fetch so the app is usable immediately.
+        const mockNews = [
+            {
+                title: "SpaceX Successfully Launches Starship on 5th Test Flight",
+                description: "The massive rocket achieved orbit and returned to Earth, splashing down in the Indian Ocean precisely as calculated.",
+                urlToImage: "https://images.unsplash.com/photo-1517976487492-5750f3195933?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                author: "Elon Musk",
+                publishedAt: "2023-10-25T10:00:00Z",
+                source: { name: "TechCrunch" },
+                url: "#"
+            },
+            {
+                title: "Global Markets Rally as Inflation Data Shows Cooling",
+                description: "Stock markets across Asia and Europe hit record highs today as new data suggests central banks may pause rate hikes.",
+                urlToImage: "https://images.unsplash.com/photo-1611974765270-ca1258634369?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                author: "Sarah Smith",
+                publishedAt: "2023-10-24T14:30:00Z",
+                source: { name: "Bloomberg" },
+                url: "#"
+            },
+            {
+                title: "New AI Model 'GPT-5' Rumored to Release Next Month",
+                description: "Insiders claim the new model features reasoning capabilities far surpassing current benchmarks in the industry.",
+                urlToImage: "https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                author: "David Chen",
+                publishedAt: "2023-10-23T09:15:00Z",
+                source: { name: "The Verge" },
+                url: "#"
+            },
+            {
+                title: "Climate Summit: Nations Agree on Historic Carbon Tax",
+                description: "In a surprise turn of events, major economies have aligned on a global carbon pricing framework starting 2025.",
+                urlToImage: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                author: "Greta T.",
+                publishedAt: "2023-10-22T11:45:00Z",
+                source: { name: "BBC News" },
+                url: "#"
+            },
+            {
+                title: "Apple Announces New VR Headset 'Vision Air'",
+                description: "A lighter, more affordable version of the Vision Pro is set to hit markets this holiday season.",
+                urlToImage: "https://images.unsplash.com/photo-1592478411213-61535fdd861d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                author: "Tim Cook",
+                publishedAt: "2023-10-21T16:20:00Z",
+                source: { name: "Apple Insider" },
+                url: "#"
+            },
+            {
+                title: "Electric Vehicle Sales Surpass Gas Cars in Norway",
+                description: "Norway becomes the first country in the world where EVs outnumber internal combustion engine vehicles on the road.",
+                urlToImage: "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                author: "AutoWeek",
+                publishedAt: "2023-10-20T08:00:00Z",
+                source: { name: "Reuters" },
+                url: "#"
+            }
+        ];
+
+        // 3. APP CONTROLLER
+        class NewsApp {
+            constructor() {
+                this.apiKey = 'YOUR_API_KEY_HERE'; // Get one from newsapi.org if you want real data
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.checkAuth();
+                this.applyTheme();
+                this.fetchNews(state.currentCategory);
+            }
+
+            setupEventListeners() {
+                // Theme Toggle
+                document.getElementById('themeToggle').addEventListener('click', () => {
+                    state.theme = state.theme === 'light' ? 'dark' : 'light';
+                    localStorage.setItem('nexus_theme', state.theme);
+                    this.applyTheme();
+                });
+
+                // Search
+                document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                    if(e.key === 'Enter') {
+                        this.fetchNews(null, e.target.value);
+                    }
+                });
+
+                // Category Filters
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelector('.filter-btn.active').classList.remove('active');
+                        e.target.classList.add('active');
+                        const category = e.target.dataset.category;
+                        this.filterNews(category);
+                    });
+                });
+            }
+
+            applyTheme() {
+                document.documentElement.setAttribute('data-theme', state.theme);
+                const icon = document.querySelector('#themeToggle i');
+                icon.className = state.theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+            }
+
+            async fetchNews(category = 'general', query = null) {
+                const grid = document.getElementById('newsGrid');
+                grid.innerHTML = this.getSkeletonHTML(); // Show loading state
+
+                // SIMULATING NETWORK REQUEST DELAY FOR ANIMATION EFFECT
+                setTimeout(async () => {
+                    try {
+                        let articles = [];
+
+                        // ---------------------------------------------------------
+                        // TO USE REAL API: Uncomment below and add Key
+                        // const url = query 
+                        //     ? `https://newsapi.org/v2/everything?q=${query}&apiKey=${this.apiKey}`
+                        //     : `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=${this.apiKey}`;
+                        // const res = await fetch(url);
+                        // const data = await res.json();
+                        // articles = data.articles;
+                        // ---------------------------------------------------------
+
+                        // USING MOCK DATA FOR DEMO STABILITY
+                        // Filter mock data based on category/query to simulate API
+                        articles = mockNews.filter(news => {
+                            if(query) return news.title.toLowerCase().includes(query.toLowerCase());
+                            return true; // Return all for demo categories (simulated)
+                        });
+
+                        // Duplicate data to fill grid for visual effect
+                        state.articles = [...articles, ...articles]; 
+                        this.renderNews(state.articles);
+
+                    } catch (error) {
+                        console.error("Error fetching news:", error);
+                        grid.innerHTML = `<h3 style="grid-column: 1/-1; text-align: center;">Failed to load news. Please try again.</h3>`;
+                    }
+                }, 1000); // 1 second artificial delay
+            }
+
+            filterNews(category) {
+                state.currentCategory = category;
+                this.fetchNews(category);
+            }
+
+            renderNews(articles) {
+                const grid = document.getElementById('newsGrid');
+                grid.innerHTML = '';
+
+                if(articles.length === 0) {
+                    grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">No news found.</p>';
+                    return;
+                }
+
+                articles.forEach((article, index) => {
+                    // Skip articles without images for better UI
+                    if(!article.urlToImage) return;
+
+                    const card = document.createElement('div');
+                    card.className = 'news-card';
+                    card.style.animationDelay = `${index * 0.1}s`; // Staggered animation
+
+                    const date = new Date(article.publishedAt).toLocaleDateString();
+
+                    card.innerHTML = `
+                        <div class="card-image">
+                            <img src="${article.urlToImage}" alt="News Image">
+                            <span class="card-badge">${article.source.name}</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-date">
+                                <i class="far fa-calendar-alt"></i> ${date}
+                            </div>
+                            <h3 class="card-title">${article.title}</h3>
+                            <p class="card-desc">${article.description || 'No description available for this news article.'}</p>
+                            <div class="card-footer">
+                                <span style="font-size: 0.8rem; font-weight: 600;">By ${article.author ? article.author.slice(0,15) : 'Editor'}</span>
+                                <a href="${article.url}" target="_blank" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            getSkeletonHTML() {
+                let html = '';
+                for(let i=0; i<6; i++) {
+                    html += `
+                        <div class="news-card" style="pointer-events: none;">
+                            <div class="card-image skeleton"></div>
+                            <div class="card-content">
+                                <div class="skeleton" style="height: 15px; width: 30%; margin-bottom: 10px; border-radius: 4px;"></div>
+                                <div class="skeleton" style="height: 24px; width: 90%; margin-bottom: 10px; border-radius: 4px;"></div>
+                                <div class="skeleton" style="height: 24px; width: 60%; margin-bottom: 15px; border-radius: 4px;"></div>
+                                <div class="skeleton" style="height: 60px; width: 100%; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                return html;
+            }
+
+            // Auth UI Update
+            checkAuth() {
+                const loginBtn = document.getElementById('loginBtn');
+                const userProfile = document.getElementById('userProfile');
+                const userNameDisplay = document.getElementById('userNameDisplay');
+
+                if (state.currentUser) {
+                    loginBtn.style.display = 'none';
+                    userProfile.style.display = 'flex';
+                    userNameDisplay.textContent = state.currentUser.name.split(' ')[0];
+                } else {
+                    loginBtn.style.display = 'block';
+                    userProfile.style.display = 'none';
+                }
+            }
+        }
+
+        // 4. AUTHENTICATION MANAGER
+        class AuthManager {
+            constructor() {
+                this.modal = document.getElementById('authModal');
+                this.init();
+            }
+
+            init() {
+                // Toggle Modal
+                document.getElementById('loginBtn').addEventListener('click', () => this.toggleModal(true));
+                document.getElementById('closeModal').addEventListener('click', () => this.toggleModal(false));
+                
+                // Switch Tabs
+                document.querySelectorAll('.auth-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+                        
+                        if(e.target.dataset.tab === 'login') {
+                            document.getElementById('loginForm').style.display = 'block';
+                            document.getElementById('signupForm').style.display = 'none';
+                        } else {
+                            document.getElementById('loginForm').style.display = 'none';
+                            document.getElementById('signupForm').style.display = 'block';
+                        }
+                    });
+                });
+
+                // Handle Logout
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    localStorage.removeItem('nexus_user');
+                    state.currentUser = null;
+                    app.checkAuth();
+                    this.showToast('Logged out successfully', 'success');
+                });
+
+                // Handle Signup
+                document.getElementById('signupForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('signupName').value;
+                    const email = document.getElementById('signupEmail').value;
+                    const password = document.getElementById('signupPass').value;
+
+                    // Simulate API Call
+                    const user = { name, email, password };
+                    
+                    // Simple Validation simulation
+                    const users = JSON.parse(localStorage.getItem('nexus_users_db')) || [];
+                    if(users.find(u => u.email === email)) {
+                        this.showToast('Email already exists!', 'error');
+                        return;
+                    }
+
+                    users.push(user);
+                    localStorage.setItem('nexus_users_db', JSON.stringify(users));
+                    
+                    // Auto Login
+                    this.loginUser(user);
+                    this.toggleModal(false);
+                    this.showToast('Account created successfully!', 'success');
+                });
+
+                // Handle Login
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('loginEmail').value;
+                    const password = document.getElementById('loginPass').value;
+
+                    const users = JSON.parse(localStorage.getItem('nexus_users_db')) || [];
+                    const user = users.find(u => u.email === email && u.password === password);
+
+                    if(user) {
+                        this.loginUser(user);
+                        this.toggleModal(false);
+                        this.showToast(`Welcome back, ${user.name}!`, 'success');
+                    } else {
+                        this.showToast('Invalid credentials', 'error');
+                    }
+                });
+
+                // Newsletter Submit Handler
+                document.getElementById('newsletterForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const input = e.target.querySelector('input');
+                    if(input.value) {
+                        this.showToast(`Subscribed successfully with ${input.value}!`, 'success');
+                        input.value = '';
+                    }
+                });
+            }
+
+            loginUser(user) {
+                localStorage.setItem('nexus_user', JSON.stringify(user));
+                state.currentUser = user;
+                app.checkAuth();
+            }
+
+            toggleModal(show) {
+                if(show) this.modal.classList.add('active');
+                else this.modal.classList.remove('active');
+            }
+
+            showToast(msg, type) {
+                const toast = document.getElementById('toast');
+                toast.textContent = msg;
+                toast.className = `toast ${type} show`;
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+        }
+
+        // Initialize App
+        const app = new NewsApp();
+        const auth = new AuthManager();
+
+    </script>
+</body>
+</html>
