@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusNews | Global & Local News Portal</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* =========================================
+           1. CSS VARIABLES & ROOT SETTINGS
+           ========================================= */
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #ec4899;
+            --accent-color: #8b5cf6;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --nav-bg: rgba(15, 23, 42, 0.85);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.5s ease, color 0.5s ease; overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* =========================================
+           2. ANIMATIONS
+           ========================================= */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* =========================================
+           3. NAVIGATION BAR (Mobile Responsive)
+           ========================================= */
+        nav {
+            position: fixed; top: 0; width: 100%; padding: 1rem 5%; display: flex; justify-content: space-between;
+            align-items: center; background: var(--nav-bg); backdrop-filter: blur(12px); z-index: 1000;
+            border-bottom: var(--glass-border); transition: var(--transition);
+        }
+        .logo { font-size: 1.8rem; font-weight: 800; background: linear-gradient(to right, var(--primary-color), var(--secondary-color)); -webkit-background-clip: text; background-clip: text; color: transparent; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links li { position: relative; cursor: pointer; font-weight: 500; transition: var(--transition); }
+        .nav-links li::after { content: ''; position: absolute; width: 0; height: 2px; bottom: -5px; left: 0; background: var(--primary-color); transition: width 0.3s; }
+        .nav-links li:hover::after { width: 100%; }
+
+        .nav-controls { display: flex; align-items: center; gap: 1.5rem; }
+        .search-bar { position: relative; display: flex; align-items: center; background: var(--bg-color); border-radius: 50px; padding: 0.5rem 1rem; border: 1px solid transparent; transition: var(--transition); }
+        .search-bar:focus-within { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+        .search-bar input { border: none; background: transparent; outline: none; color: var(--text-main); margin-left: 10px; width: 150px; }
+
+        .btn { padding: 0.6rem 1.5rem; border-radius: 50px; border: none; cursor: pointer; font-weight: 600; transition: var(--transition); background: var(--primary-color); color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px var(--primary-color); }
+        .theme-toggle { cursor: pointer; font-size: 1.2rem; color: var(--text-main); }
+        
+        /* Mobile Hamburger Icon */
+        .mobile-menu-btn { display: none; font-size: 1.8rem; cursor: pointer; color: var(--text-main); z-index: 1001; }
+
+        /* =========================================
+           4. PAGE SECTIONS (Routing)
+           ========================================= */
+        .page-section { display: none; flex: 1; padding: 2rem 5%; animation: fadeIn 0.5s ease-out; margin-top: 80px; }
+        .page-section.active { display: block; }
+        #homeSection { margin-top: 0; }
+
+        /* =========================================
+           5. HERO HEADER
+           ========================================= */
+        header { margin-top: 80px; padding: 4rem 5%; text-align: center; background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(236, 72, 153, 0.1)); border-bottom-left-radius: 50px; border-bottom-right-radius: 50px; }
+        header h1 { font-size: 3.5rem; margin-bottom: 1rem; animation: fadeIn 0.8s ease-out; }
+        header p { font-size: 1.2rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 2rem auto; animation: fadeIn 1s ease-out; }
+        .category-filters { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; animation: fadeIn 1.2s ease-out; }
+        .filter-btn { background: var(--card-bg); border: 1px solid var(--text-muted); color: var(--text-main); padding: 0.5rem 1.5rem; border-radius: 20px; cursor: pointer; transition: var(--transition); opacity: 0.7; }
+        .filter-btn.active, .filter-btn:hover { background: var(--primary-color); border-color: var(--primary-color); color: white; opacity: 1; transform: scale(1.05); }
+
+        /* =========================================
+           6. NEWS GRID
+           ========================================= */
+        .container { padding: 4rem 5%; flex: 1; }
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2.5rem; }
+        .news-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); transition: var(--transition); display: flex; flex-direction: column; opacity: 0; animation: fadeIn 0.5s ease-out forwards; }
+        .news-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        .card-image { height: 200px; width: 100%; position: relative; overflow: hidden; background-color: #ddd; }
+        .card-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .news-card:hover .card-image img { transform: scale(1.1); }
+        .card-badge { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; z-index: 2; }
+        .card-content { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; }
+        .card-date { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 5px; }
+        .card-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.8rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(107, 114, 128, 0.1); padding-top: 1rem; }
+        .read-more { color: var(--primary-color); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: var(--transition); border: none; background: none; font-size: 1rem; }
+        .read-more:hover { gap: 10px; color: var(--accent-color); }
+
+        /* =========================================
+           7. ABOUT & CONTACT PAGES
+           ========================================= */
+        .static-page-header { text-align: center; margin-bottom: 3rem; }
+        .static-page-header h1 { font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem; }
+        .about-content { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+        .about-text p { font-size: 1.1rem; line-height: 1.8; margin-bottom: 1.5rem; color: var(--text-muted); }
+        .about-image img { width: 100%; border-radius: 20px; box-shadow: var(--shadow); }
+        
+        .contact-content { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; background: var(--card-bg); padding: 3rem; border-radius: 20px; box-shadow: var(--shadow); }
+        .contact-info h3 { margin-bottom: 1rem; font-size: 1.5rem; }
+        .contact-info p { margin-bottom: 1rem; color: var(--text-muted); display: flex; align-items: center; gap: 10px; }
+        .contact-form .form-group textarea { width: 100%; padding: 1rem; border-radius: 10px; border: 1px solid rgba(107, 114, 128, 0.2); background: var(--bg-color); color: var(--text-main); outline: none; resize: vertical; min-height: 150px; }
+        .contact-form .form-group textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+
+        /* =========================================
+           8. MODALS (Auth & Reader)
+           ========================================= */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; visibility: hidden; transition: var(--transition); }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .auth-container { background: var(--card-bg); width: 400px; max-width: 95%; padding: 2.5rem; border-radius: 20px; position: relative; transform: scale(0.8); transition: var(--transition); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); z-index: 2001; }
+        .modal-overlay.active .auth-container { transform: scale(1); }
+        .auth-title-warn { text-align: center; color: var(--primary-color); margin-bottom: 15px; font-size: 0.9rem; font-weight: bold; }
+        
+        .article-container { background: var(--card-bg); width: 90%; max-width: 800px; max-height: 90vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; transform: translateY(50px); transition: var(--transition); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); z-index: 2001; }
+        .modal-overlay.active .article-container { transform: translateY(0); }
+        .article-header { padding: 2rem; border-bottom: 1px solid rgba(107, 114, 128, 0.1); position: relative; }
+        .article-close { position: absolute; top: 15px; right: 20px; font-size: 2.5rem; cursor: pointer; color: var(--text-muted); transition: color 0.3s; line-height: 1; z-index: 10; }
+        .article-close:hover { color: var(--secondary-color); }
+        .article-body { padding: 2rem; overflow-y: auto; font-size: 1.1rem; line-height: 1.8; color: var(--text-main); }
+        .article-img { width: 100%; height: 300px; object-fit: cover; border-radius: 12px; margin-bottom: 1.5rem; }
+        
+        .tts-controls { background: rgba(79, 70, 229, 0.1); padding: 1rem; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; border: 1px solid var(--primary-color); }
+        .tts-btn { background: var(--primary-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+
+        /* Forms */
+        .auth-tabs { display: flex; margin-bottom: 2rem; border-bottom: 2px solid rgba(107, 114, 128, 0.1); }
+        .auth-tab { flex: 1; padding: 1rem; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); transition: var(--transition); }
+        .auth-tab.active { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
+        .form-group input { width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid rgba(107, 114, 128, 0.2); background: var(--bg-color); color: var(--text-main); outline: none; transition: var(--transition); }
+        .form-group input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .auth-btn { width: 100%; padding: 1rem; background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); border: none; border-radius: 10px; color: white; font-weight: 700; cursor: pointer; transition: var(--transition); }
+        
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 1rem 2rem; border-radius: 10px; color: white; font-weight: 600; transform: translateY(100px); transition: var(--transition); z-index: 3000; box-shadow: var(--shadow); }
+        .toast.success { background: #10b981; }
+        .toast.error { background: #ef4444; }
+        .toast.show { transform: translateY(0); }
+        .skeleton { background: linear-gradient(90deg, var(--card-bg) 25%, var(--bg-color) 50%, var(--card-bg) 75%); background-size: 200% 100%; animation: loading 1.5s infinite; }
+
+        /* =========================================
+           9. FOOTER
+           ========================================= */
+        footer { background: var(--card-bg); padding: 4rem 5% 2rem; margin-top: auto; border-top: var(--glass-border); box-shadow: 0 -10px 20px -10px rgba(0,0,0,0.05); }
+        .footer-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; margin-bottom: 3rem; }
+        .footer-brand h2 { font-size: 1.8rem; margin-bottom: 1rem; background: linear-gradient(to right, var(--primary-color), var(--secondary-color)); -webkit-background-clip: text; background-clip: text; color: transparent; cursor: pointer; }
+        .footer-brand p { color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem; }
+        .social-links { display: flex; gap: 15px; }
+        .social-icon { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-color); display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; border: 1px solid rgba(0,0,0,0.05); transition: var(--transition);}
+        .social-icon:hover { background: var(--primary-color); color: white; transform: translateY(-5px) rotate(360deg); }
+        .footer-links h3 { margin-bottom: 1.5rem; color: var(--text-main); }
+        .footer-links ul { list-style: none; }
+        .footer-links li { margin-bottom: 0.8rem; }
+        .footer-links a { text-decoration: none; color: var(--text-muted); transition: var(--transition); display: inline-block; cursor: pointer; }
+        .footer-links a:hover { color: var(--primary-color); transform: translateX(5px); }
+        .newsletter-form { position: relative; }
+        .newsletter-form input { width: 100%; padding: 1rem; padding-right: 50px; border-radius: 10px; border: 1px solid rgba(107, 114, 128, 0.2); background: var(--bg-color); color: var(--text-main); outline: none; }
+        .newsletter-btn { position: absolute; right: 5px; top: 5px; bottom: 5px; width: 40px; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; }
+        .copyright { text-align: center; padding-top: 2rem; border-top: 1px solid rgba(107, 114, 128, 0.1); color: var(--text-muted); font-size: 0.9rem; }
+
+        /* =========================================
+           10. MOBILE RESPONSIVE MEDIA QUERIES
+           ========================================= */
+        @media (max-width: 992px) {
+            .about-content, .contact-content { grid-template-columns: 1fr; gap: 2rem; }
+            header h1 { font-size: 2.8rem; }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn { display: block; }
+            
+            /* Hamburger Dropdown Menu */
+            .nav-links {
+                position: absolute; top: 100%; left: 0; width: 100%; background: var(--card-bg);
+                flex-direction: column; gap: 0; text-align: center; padding: 0;
+                box-shadow: 0 10px 10px rgba(0,0,0,0.1);
+                max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out;
+            }
+            .nav-links.active { max-height: 400px; border-bottom: var(--glass-border); }
+            .nav-links li { padding: 1.5rem 0; border-bottom: 1px solid rgba(107, 114, 128, 0.1); }
+            .nav-links li::after { display: none; }
+
+            .nav-controls { gap: 1rem; }
+            .search-bar input { width: 100px; }
+            
+            header h1 { font-size: 2.2rem; }
+            .container { padding: 2rem 5%; }
+            .news-grid { grid-template-columns: 1fr; } /* Single column for mobile */
+            
+            .article-container { width: 95%; max-height: 85vh; margin-top: 20px; }
+            .article-header { padding: 1.5rem; }
+            #readTitle { font-size: 1.5rem !important; }
+            .article-body { padding: 1.5rem; }
+            .tts-controls { flex-direction: column; gap: 1rem; text-align: center; }
+            .tts-btn { width: 100%; justify-content: center; }
+        }
+
+        @media (max-width: 480px) {
+            .search-bar { display: none; } /* Hide search bar on very small screens to save space */
+            .logo { font-size: 1.4rem; }
+            .auth-container { padding: 1.5rem; }
+            .filter-btn { padding: 0.4rem 1rem; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo" onclick="app.switchPage('homeSection')"><i class="fas fa-bolt"></i> NexusNews</div>
+        
+        <ul class="nav-links" id="navLinks">
+            <li onclick="app.switchPage('homeSection'); app.filterNews('general')">Home</li>
+            <li onclick="app.switchPage('homeSection'); app.filterNews('technology')">Tech</li>
+            <li onclick="app.switchPage('homeSection'); app.filterNews('business')">Business</li>
+            <li onclick="app.switchPage('homeSection'); app.filterNews('sports')">Sports</li>
+            <li onclick="app.switchPage('homeSection'); app.filterNews('hindi')">हिंदी</li>
+            <li onclick="app.switchPage('aboutSection')">About Us</li>
+            <li onclick="app.switchPage('contactSection')">Contact</li>
+        </ul>
+        
+        <div class="nav-controls">
+            <div class="search-bar">
+                <i class="fas fa-search" style="color: var(--text-muted)"></i>
+                <input type="text" id="searchInput" placeholder="Search news...">
+            </div>
+            <div class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></div>
+            
+            <div class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </div>
+
+            <button class="btn" id="loginBtn" style="display:none;">Login</button>
+            <div id="userProfile" style="display: none; align-items: center; gap: 10px; cursor: pointer;">
+                <div style="width: 35px; height: 35px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <span id="userNameDisplay" style="font-weight: 600; display: none;">User</span>
+                <i class="fas fa-sign-out-alt" id="logoutBtn" style="color: var(--text-muted);" title="Logout"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div id="homeSection" class="page-section active">
+        <header>
+            <h1>Discover the World <br> <span style="color: var(--primary-color)">Through Nexus</span></h1>
+            <p>Your daily source for curated, high-quality global and Indian news. Constantly updated with the latest breaks in technology, business, sports, and science.</p>
+            <div class="category-filters">
+                <button class="filter-btn active" data-category="general">All</button>
+                <button class="filter-btn" data-category="technology">Technology</button>
+                <button class="filter-btn" data-category="business">Business</button>
+                <button class="filter-btn" data-category="sports">Sports</button>
+                <button class="filter-btn" data-category="science">Science</button>
+                <button class="filter-btn" data-category="hindi">Hindi (हिंदी)</button>
+            </div>
+        </header>
+        <div class="container">
+            <div class="news-grid" id="newsGrid"></div>
+        </div>
+    </div>
+
+    <div id="aboutSection" class="page-section">
+        <div class="static-page-header">
+            <h1>About NexusNews</h1>
+            <p style="color: var(--text-muted); font-size: 1.2rem;">Empowering the world with verified, fast, and unbiased information.</p>
+        </div>
+        <div class="about-content">
+            <div class="about-image">
+                <img src="https://images.unsplash.com/photo-1495020689067-958852a7765e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="About Us">
+            </div>
+            <div class="about-text">
+                <h2 style="margin-bottom: 1rem; color: var(--primary-color);">Our Mission</h2>
+                <p>Founded with the vision to cut through the noise of the digital age, NexusNews is dedicated to delivering crystal-clear journalism. Whether it's the latest breakthrough in artificial intelligence, fluctuations in the Sensex, or hyper-local updates from India, our team works around the clock to bring you the truth.</p>
+                <p>We leverage cutting-edge technology, including our state-of-the-art Text-to-Speech (TTS) reader, to ensure that news is accessible to everyone, everywhere. Our multi-lingual approach ensures that both English and Hindi readers get real-time updates without compromise.</p>
+                <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Core Values</h3>
+                <ul style="list-style-type: none;">
+                    <li style="margin-bottom: 10px;"><i class="fas fa-check-circle" style="color: var(--primary-color); margin-right: 10px;"></i> <strong>Integrity:</strong> Unbiased and strictly verified reporting.</li>
+                    <li style="margin-bottom: 10px;"><i class="fas fa-check-circle" style="color: var(--primary-color); margin-right: 10px;"></i> <strong>Accessibility:</strong> Built-in audio readers and mobile-first design.</li>
+                    <li style="margin-bottom: 10px;"><i class="fas fa-check-circle" style="color: var(--primary-color); margin-right: 10px;"></i> <strong>Speed:</strong> Dynamic algorithms ensuring daily updates.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="contactSection" class="page-section">
+        <div class="static-page-header">
+            <h1>Contact Us</h1>
+            <p style="color: var(--text-muted); font-size: 1.2rem;">Have a tip, feedback, or inquiry? We'd love to hear from you.</p>
+        </div>
+        <div class="contact-content">
+            <div class="contact-info">
+                <h3 style="color: var(--primary-color);">Get In Touch</h3>
+                <p>Our editorial and support teams are available 24/7 to assist with your queries.</p>
+                <div style="margin-top: 2rem;">
+                    <p><i class="fas fa-map-marker-alt" style="color: var(--secondary-color); font-size: 1.2rem; width: 30px;"></i> 123 Tech Park Avenue, Cyber City, India</p>
+                    <p><i class="fas fa-phone" style="color: var(--secondary-color); font-size: 1.2rem; width: 30px;"></i> +91 1800-NEXUS-NEWS</p>
+                    <p><i class="fas fa-envelope" style="color: var(--secondary-color); font-size: 1.2rem; width: 30px;"></i> editorial@nexusnews.com</p>
+                </div>
+                <div class="social-links" style="margin-top: 2rem;">
+                    <div class="social-icon"><i class="fab fa-twitter"></i></div>
+                    <div class="social-icon"><i class="fab fa-facebook-f"></i></div>
+                    <div class="social-icon"><i class="fab fa-linkedin-in"></i></div>
+                </div>
+            </div>
+            <div class="contact-form">
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label>Your Name</label>
+                        <input type="text" required placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" required placeholder="john@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Your Message</label>
+                        <textarea required placeholder="Write your message here..."></textarea>
+                    </div>
+                    <button type="submit" class="auth-btn">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h2 onclick="app.switchPage('homeSection')"><i class="fas fa-bolt"></i> NexusNews</h2>
+                <p>Empowering the world with truth. We bring you the latest verified news from across the globe, focusing on technology, science, and the economy.</p>
+                <div class="social-links">
+                    <div class="social-icon"><i class="fab fa-twitter"></i></div>
+                    <div class="social-icon"><i class="fab fa-facebook-f"></i></div>
+                    <div class="social-icon"><i class="fab fa-instagram"></i></div>
+                    <div class="social-icon"><i class="fab fa-linkedin-in"></i></div>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h3>Categories</h3>
+                <ul>
+                    <li><a onclick="app.switchPage('homeSection'); app.filterNews('technology')">Technology</a></li>
+                    <li><a onclick="app.switchPage('homeSection'); app.filterNews('business')">Business</a></li>
+                    <li><a onclick="app.switchPage('homeSection'); app.filterNews('science')">Science</a></li>
+                    <li><a onclick="app.switchPage('homeSection'); app.filterNews('sports')">Sports</a></li>
+                    <li><a onclick="app.switchPage('homeSection'); app.filterNews('hindi')">Hindi News</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h3>Company</h3>
+                <ul>
+                    <li><a onclick="app.switchPage('aboutSection')">About Us</a></li>
+                    <li><a onclick="app.switchPage('contactSection')">Contact Us</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h3>Newsletter</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem;">Subscribe to get the latest daily updates directly to your inbox.</p>
+                <form class="newsletter-form" id="newsletterForm">
+                    <input type="email" placeholder="Your email address" required>
+                    <button type="submit" class="newsletter-btn"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            <p>&copy; <span id="currentYear"></span> NexusNews Portal. All Rights Reserved. Built for Global & Local Updates.</p>
+        </div>
+    </footer>
+
+    <div class="modal-overlay" id="authModal">
+        <div class="auth-container" id="authContainerBlock">
+            <p class="auth-title-warn"><i class="fas fa-lock"></i> Please Login to Access NexusNews</p>
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Login</div>
+                <div class="auth-tab" data-tab="signup">Sign Up</div>
+            </div>
+            <form id="loginForm">
+                <div class="form-group"><label>Email</label><input type="email" id="loginEmail" required></div>
+                <div class="form-group"><label>Password</label><input type="password" id="loginPass" required></div>
+                <button type="submit" class="auth-btn">Log In</button>
+            </form>
+            <form id="signupForm" style="display: none;">
+                <div class="form-group"><label>Name</label><input type="text" id="signupName" required></div>
+                <div class="form-group"><label>Email</label><input type="email" id="signupEmail" required></div>
+                <div class="form-group"><label>Password</label><input type="password" id="signupPass" required></div>
+                <button type="submit" class="auth-btn" style="background: var(--secondary-color);">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="articleReaderModal">
+        <div class="article-container" id="articleContainerBlock">
+            <span class="article-close" id="closeArticleBtn">&times;</span>
+            <div class="article-header">
+                <span id="readBadge" class="card-badge" style="position:relative; top:0; right:0; display:inline-block; margin-bottom:10px;">Category</span>
+                <h2 id="readTitle" style="font-size: 2rem; margin-bottom: 10px;">Article Title</h2>
+                <p style="color: var(--text-muted);"><i class="far fa-calendar-alt"></i> <span id="readDate">Date</span> | By <span id="readAuthor">Author</span></p>
+            </div>
+            <div class="article-body">
+                <div class="tts-controls">
+                    <div>
+                        <strong><i class="fas fa-volume-up"></i> Audio Reader</strong>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top:5px;">Have this article read aloud to you.</p>
+                    </div>
+                    <button class="tts-btn" id="playAudioBtn"><i class="fas fa-play"></i> Listen</button>
+                </div>
+                <img id="readImage" class="article-img" src="" alt="Article Image">
+                <div id="readContent" style="white-space: pre-line;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Message here</div>
+
+    <script>
+        // Set dynamic copyright year
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // Mobile Menu Toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            document.getElementById('navLinks').classList.toggle('active');
+            const icon = this.querySelector('i');
+            if(icon.classList.contains('fa-bars')) {
+                icon.classList.replace('fa-bars', 'fa-times');
+            } else {
+                icon.classList.replace('fa-times', 'fa-bars');
+            }
+        });
+
+        // Close mobile menu when a link is clicked
+        document.querySelectorAll('.nav-links li').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+                document.querySelector('#mobileMenuBtn i').classList.replace('fa-times', 'fa-bars');
+            });
+        });
+
+        // Form submission handlers for static pages
+        document.getElementById('contactForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const toast = document.getElementById('toast');
+            toast.textContent = "Thank you! Your message has been sent to our team.";
+            toast.className = `toast success show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+            e.target.reset();
+        });
+
+        // 1. STATE MANAGEMENT
+        const state = {
+            currentUser: JSON.parse(localStorage.getItem('nexus_user')) || null,
+            theme: localStorage.getItem('nexus_theme') || 'light',
+            currentCategory: 'general',
+            articles: []
+        };
+
+        // 2. BASE MOCK DATA (High-Quality Core Articles)
+        const baseMockNews = [
+            // --- SCIENCE ---
+            { category: "science", language: "en-IN", author: "ISRO Press", source: { name: "The Hindu" }, title: "ISRO Gaganyaan Mission: Astronauts Begin Final Quarantine Ahead of Launch", description: "India's space agency has entered the final phase of the Gaganyaan mission, with the chosen astronauts beginning their pre-launch quarantine.", urlToImage: "https://images.unsplash.com/photo-1517976487492-5750f3195933?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "The Indian Space Research Organisation (ISRO) is on the brink of history. The selected astronauts for the Gaganyaan mission have officially entered their mandatory 14-day quarantine period before the highly anticipated orbital launch.\n\nThe spacecraft will launch from Sriharikota, taking the crew to a 400 km orbit for a three-day mission. This will make India the fourth nation in the world to launch humans into space independently." },
+            { category: "science", language: "en-US", author: "NASA Comms", source: { name: "Space.com" }, title: "Artemis III Update: Massive SLS Core Stage Arrives at Kennedy Space Center", description: "The massive core stage of NASA's Space Launch System rocket has arrived in Florida, marking a major milestone.", urlToImage: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "NASA's Artemis III mission took a giant leap forward this week. The 212-foot-tall core stage of the Space Launch System (SLS) rocket arrived at the Kennedy Space Center aboard the Pegasus barge.\n\nTechnicians are now moving the hardware into the Vehicle Assembly Building (VAB) where it will be stacked with twin solid rocket boosters. The Artemis III mission will test rendezvous and docking capabilities between the Orion capsule and commercial landers in Earth orbit." },
+            { category: "science", language: "en-UK", author: "Health Desk", source: { name: "BBC News" }, title: "Breakthrough: New mRNA Vaccine Shows 95% Efficacy in Final Trials", description: "A highly anticipated mRNA vaccine for Malaria has concluded its final human trials with unprecedented success rates.", urlToImage: "https://images.unsplash.com/photo-1584362917165-526a968579e8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "Medical science has achieved another historic victory. A new mRNA-based vaccine targeting Malaria has shown a remarkable 95% efficacy rate in its Phase 3 clinical trials across Africa and Southeast Asia.\n\nBuilding on the technology pioneered during the early 2020s, scientists have successfully stabilized the vaccine for warmer climates. The World Health Organization (WHO) is currently fast-tracking the approval process." },
+            { category: "science", language: "en-US", author: "Marine Bio", source: { name: "Nat Geo" }, title: "Deep-Sea Ecosystem Discovered Beneath Antarctic Ice Shelf", description: "Scientists deploying deep-water submersibles have found a thriving ecosystem completely cut off from sunlight.", urlToImage: "https://images.unsplash.com/photo-1582967265696-e260fb1e51b1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "In a stunning discovery beneath the Ross Ice Shelf, marine biologists have found a massive, interconnected ecosystem thriving in complete darkness. Relying entirely on chemosynthesis from hydrothermal vents, these newly discovered crustacean and bacterial species challenge our understanding of where life can survive.\n\nResearchers hope this discovery will inform future missions to Jupiter's moon Europa, which features similar icy, deep-water conditions." },
+            { category: "science", language: "en-US", author: "Physics Today", source: { name: "SciAm" }, title: "First Commercial Fusion Reactor Prototype Powers Up", description: "Clean energy takes a massive leap forward as a European consortium successfully activates the first scalable fusion reactor.", urlToImage: "https://images.unsplash.com/photo-1505322022379-7c3353ee6291?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "Decades of research have culminated in today's successful ignition of the 'Stellarator-X' prototype. Unlike previous experimental reactors, this facility sustained a net-positive energy plasma burn for over 15 minutes.\n\nEngineers predict that if scaled successfully, commercial fusion power could be supplying the grid by 2035, effectively ending reliance on fossil fuels for base-load power." },
+            
+            // --- TECHNOLOGY ---
+            { category: "technology", language: "en-US", author: "Tech World", source: { name: "Wired" }, title: "Next-Gen AI Models Spark Revolution in Web Development Frameworks", description: "New AI 'Agentic' tools are completely changing how developers write HTML, CSS, and JavaScript applications.", urlToImage: "https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "The landscape of software engineering has shifted dramatically. The newest generation of artificial intelligence models can now perfectly render complex, multi-page websites simply from a voice prompt.\n\nHowever, rather than replacing web developers, these tools are acting as 'super-compilers'. Developers are now focusing more on system architecture, user experience, and complex integrations, while letting AI handle the repetitive CSS styling and boilerplate JavaScript code." },
+            { category: "technology", language: "en-US", author: "Silicon Insider", source: { name: "The Verge" }, title: "The AI Infrastructure Reckoning: Companies Re-evaluate Compute Costs", description: "As enterprise AI adoption peaks, tech giants are shifting from cloud-first to hybrid models to manage soaring compute bills.", urlToImage: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "A new Deloitte report highlights a major shift in the tech industry. While token costs have dropped significantly, usage has exploded, leaving some enterprises with monthly AI bills in the tens of millions of dollars.\n\nIn response, companies are moving toward a 'strategic hybrid' approach: using public clouds for elasticity, while moving heavy inference workloads to on-premises servers to cap costs. This hardware reckoning is reshaping how data centers are built." },
+            { category: "technology", language: "en-US", author: "Gadget Guru", source: { name: "TechCrunch" }, title: "Smart Glasses Finally Go Mainstream in Consumer Tech", description: "After years of development, lightweight AR smart glasses are finally replacing smartwatches as the must-have tech accessory.", urlToImage: "https://images.unsplash.com/photo-1573486145949-182147241fa6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "This year is officially the year of Augmented Reality. Several major tech companies have successfully launched everyday smart glasses that look indistinguishable from regular prescription frames.\n\nThese devices integrate advanced AI assistants, allowing users to translate languages in real-time by looking at signs, get walking directions overlaid on the street, and read messages without looking at their phones. Analysts predict sales will surpass smartwatch numbers by the end of the holiday season." },
+            { category: "technology", language: "en-IN", author: "Telecom India", source: { name: "Mint" }, title: "6G Network Trials Begin in Select Indian Metros", description: "Telecom operators have begun initial testing of 6G infrastructure, promising speeds 50 times faster than current 5G networks.", urlToImage: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "India is moving aggressively to maintain its telecom dominance. Testing has officially begun for 6G network capabilities in Bengaluru, Hyderabad, and Pune.\n\nThe new infrastructure promises to essentially eliminate latency, enabling real-time remote robotic surgery and massive simultaneous IoT deployments. Commercial rollout is tentatively scheduled for the end of the decade." },
+            { category: "technology", language: "en-US", author: "CyberSec Today", source: { name: "ZDNet" }, title: "Quantum Encryption Becomes Standard for Banking Sector", description: "Major global banks have completed the transition to post-quantum cryptography to protect against future cyber threats.", urlToImage: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "Anticipating the eventual arrival of fault-tolerant quantum computers, the world's largest financial institutions have successfully implemented post-quantum cryptographic standards.\n\nThis massive digital infrastructure overhaul ensures that encrypted financial data harvested today cannot be retroactively decrypted by advanced machines in the future, securing the global banking system for the next generation." },
+
+            // --- BUSINESS ---
+            { category: "business", language: "en-IN", author: "Financial Desk", source: { name: "Bloomberg" }, title: "Sensex Hits Historic Milestone Amid Strong IT and Banking Earnings", description: "Indian stock markets rallied today, with the BSE Sensex crossing a new milestone driven by record corporate earnings.", urlToImage: "https://images.unsplash.com/photo-1611974765270-ca1258634369?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "Dalal Street witnessed massive buying today as the BSE Sensex breached new all-time highs. The rally was largely fueled by exceptionally strong earnings reports from major Indian IT firms and private banks.\n\nGlobal investors are increasingly looking at India as a primary growth engine, shifting capital away from volatile markets. Experts predict this bullish trend will continue through the financial year, provided inflation remains under control." },
+            { category: "business", language: "en-US", author: "AutoWeek", source: { name: "Reuters" }, title: "Global Milestone: Electric Vehicles Now Account for 40% of All New Car Sales", description: "A major tipping point was reached recently, as electric vehicle adoption accelerated far past industry predictions.", urlToImage: "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "The transition to sustainable transport has hit a massive milestone. Recent data reveals that 40% of all new passenger vehicles sold globally were fully electric.\n\nThis rapid growth is attributed to massive breakthroughs in solid-state battery technology, which has significantly lowered the cost of EVs while doubling their range. Traditional automakers are now racing to convert their remaining factories to electric production." },
+            { category: "business", language: "en-IN", author: "Econ Times", source: { name: "Economic Times" }, title: "RBI Keeps Repo Rate Unchanged for 12th Consecutive Cycle", description: "The Reserve Bank of India has opted to maintain its hawkish stance on inflation, keeping interest rates steady.", urlToImage: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "In its bi-monthly monetary policy review today, the RBI's Monetary Policy Committee voted unanimously to keep the repo rate unchanged.\n\nThe Governor noted that while core inflation has moderated, volatile food prices due to erratic weather patterns require the central bank to remain vigilant. Industry leaders had hoped for a rate cut to spur real estate and manufacturing investments." },
+            { category: "business", language: "en-IN", author: "Biz Line", source: { name: "Business Line" }, title: "Reliance Industries Launches Pan-India AI Cloud Infrastructure", description: "A new domestic cloud service aims to provide cheap, localized AI computing power to Indian startups.", urlToImage: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "Reliance Industries has officially entered the cloud computing wars with the launch of 'Jio AI Cloud'. The service promises to undercut international competitors by 40%, offering massive GPU clusters hosted entirely within Indian borders.\n\nThis move addresses long-standing data sovereignty concerns and provides local startups with the cheap compute power needed to train large language models in regional Indian languages." },
+            { category: "business", language: "en-US", author: "Market Watch", source: { name: "WSJ" }, title: "Global Inflation Cools to Pre-Pandemic Levels", description: "Economic data shows a stabilizing global economy, with supply chains fully recovered and consumer spending steady.", urlToImage: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "After years of economic turbulence, the IMF reports that global average inflation has finally retreated to the 2.5% target range seen before 2020.\n\nThe stabilization of energy markets, the end of pandemic-era supply chain bottlenecks, and aggressive central bank policies have successfully engineered a 'soft landing' for the global economy, sparking a rally in retail and manufacturing stocks." },
+
+            // --- SPORTS ---
+            { category: "sports", language: "en-IN", author: "Cricket Daily", source: { name: "Cricbuzz" }, title: "IPL Clash: Mumbai Indians to Face Sunrisers Hyderabad", description: "As the IPL season heats up, MI prepares to take on SRH at the Wankhede Stadium in a match that could decide playoff spots.", urlToImage: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "The Indian Premier League has delivered non-stop action. Tonight, the Mumbai Indians are set to face Sunrisers Hyderabad at the iconic Wankhede Stadium.\n\nWith both teams fighting for a top-four finish to secure their spot in the playoffs, tensions are high. Analysts predict a high-scoring thriller, given the recent form of both batting lineups and the typically flat Mumbai pitch." },
+            { category: "sports", language: "en-IN", author: "Sports Desk", source: { name: "ESPN" }, title: "WPL Flashback: How RCB Secured the Title in a Thrilling Final", description: "A look back at the Women's Premier League final, where Royal Challengers Bengaluru defeated Delhi Capitals by 6 wickets.", urlToImage: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "Though a few months have passed, cricket fans are still talking about the historic Women's Premier League final. Royal Challengers Bengaluru chased down a monumental target of 204 against the Delhi Capitals to claim the trophy.\n\nSmriti Mandhana's incredible performance earned her the Player of the Match title, as RCB secured the win with just 2 balls left in the final over. The season has been praised as a massive turning point for the popularity of women's franchise cricket globally." },
+            { category: "sports", language: "en-IN", author: "IPL Updates", source: { name: "Star Sports" }, title: "IPL Preview: Royal Challengers Bengaluru vs Gujarat Titans", description: "Tomorrow's mega clash at the Narendra Modi Stadium sees a resurgent RCB take on the formidable Gujarat Titans.", urlToImage: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "Anticipation is building for the upcoming IPL match. The Royal Challengers Bengaluru will travel to Ahmedabad to face the Gujarat Titans in what promises to be a spectacular contest.\n\nRCB's batting order has been phenomenal this season, but they face a stern test against GT's world-class spin attack on a pitch known to favor the slow bowlers in the second innings." },
+            { category: "sports", language: "en-US", author: "World Football", source: { name: "Sky Sports" }, title: "FIFA World Cup Qualifiers Reach Critical Stage", description: "As the expanded 48-team tournament approaches, nations are fighting tooth and nail for the remaining qualifying spots.", urlToImage: "https://images.unsplash.com/photo-1518605368461-1e1e38ce8058?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "The road to North America is heating up. With the tournament expanding to 48 teams, the qualification rounds have seen incredible underdog stories emerging from the Asian and African confederations.\n\nSeveral traditional powerhouse teams find themselves in must-win situations this week to avoid the dreaded inter-confederation playoffs. Fans are preparing for a spectacular summer of football across the US, Canada, and Mexico." },
+            { category: "sports", language: "en-IN", author: "Olympic Watch", source: { name: "The Hindu" }, title: "Indian Athletes Begin Intensive Training for Asian Games", description: "Following a record-breaking performance in previous outings, India's sporting contingents are aiming even higher.", urlToImage: "https://images.unsplash.com/photo-1526676037777-05a232554f77?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "With just months to go before the Asian Games in Aichi-Nagoya, Japan, Indian athletes have entered high-altitude training camps across the country.\n\nThe Sports Ministry has heavily increased funding for track and field, weightlifting, and archery, hoping to surpass the 100-medal milestone achieved previously. A new generation of teenage athletes is expected to lead the charge." },
+
+            // --- HINDI ---
+            { category: "hindi", language: "hi-IN", author: "दैनिक जागरण", source: { name: "Dainik Jagran" }, title: "हिमाचल प्रदेश: शिमला और मंडी में खुलेंगे नए आईटी हब, युवाओं को मिलेगा रोजगार", description: "राज्य सरकार ने आईटी सेक्टर को बढ़ावा देने के लिए नए बजट को मंजूरी दे दी है, जिससे स्थानीय युवाओं को बड़े अवसर मिलेंगे।", urlToImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "हिमाचल प्रदेश सरकार ने राज्य के युवाओं के लिए एक बड़ी सौगात दी है। कंप्यूटर साइंस (CS) और आईटी के छात्रों को अब नौकरी के लिए राज्य से बाहर नहीं जाना पड़ेगा। \n\nसरकार ने शिमला और मंडी जिलों में अत्याधुनिक 'टेक पार्क' बनाने की घोषणा की है। इस प्रोजेक्ट के लिए भारी बजट पास किया गया है। उम्मीद है कि अगले 2 सालों में यहां वेब डेवलपमेंट, आर्टिफिशियल इंटेलिजेंस और सॉफ्टवेयर से जुड़ी प्रमुख कंपनियां अपने ऑफिस खोलेंगी, जिससे हजारों नौकरियां पैदा होंगी।" },
+            { category: "hindi", language: "hi-IN", author: "नवभारत टाइम्स", source: { name: "Navbharat Times" }, title: "भारतीय शेयर बाजार: सेंसेक्स ने ऐतिहासिक आंकड़ा पार किया", description: "बैंकिंग और टेक कंपनियों के शानदार तिमाही नतीजों के बाद भारतीय शेयर बाजार में जबरदस्त उछाल देखने को मिला है।", urlToImage: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "दलाल स्ट्रीट पर आज जश्न का माहौल है। आज कारोबारी सत्र में बीएसई सेंसेक्स (BSE Sensex) ने एक नया ऐतिहासिक आंकड़ा पार कर लिया है। \n\nविशेषज्ञों का मानना है कि आईटी और ऑटोमोबाइल सेक्टर में भारी विदेशी निवेश (FDI) के कारण यह उछाल आया है। इसके साथ ही, भारत दुनिया की तीसरी सबसे बड़ी अर्थव्यवस्था बनने की दिशा में तेजी से आगे बढ़ रहा है। खुदरा निवेशकों के लिए यह समय काफी लाभदायक साबित हो रहा है।" },
+            { category: "hindi", language: "hi-IN", author: "इसरो अपडेट्स", source: { name: "Aaj Tak" }, title: "गगनयान मिशन: अंतरिक्ष यात्रियों का 14-दिन का क्वारंटाइन शुरू", description: "भारत के पहले मानव अंतरिक्ष उड़ान मिशन के लिए उलटी गिनती शुरू हो गई है। अंतरिक्ष यात्रियों को विशेष आइसोलेशन में रखा गया है।", urlToImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "भारतीय अंतरिक्ष अनुसंधान संगठन (ISRO) अपने सबसे महत्वाकांक्षी 'गगनयान मिशन' के अंतिम चरण में पहुंच गया है। पृथ्वी की कक्षा में जाने के लिए चुने गए तीन अंतरिक्ष यात्रियों ने अपनी 14 दिन की सख्त क्वारंटाइन अवधि शुरू कर दी है।\n\nयह प्रक्रिया सुनिश्चित करती है कि अंतरिक्ष में जाने से पहले क्रू पूरी तरह से स्वस्थ रहे। इस ऐतिहासिक लॉन्च के साथ, भारत अमेरिका, रूस और चीन के बाद स्वदेशी रूप से मानव को अंतरिक्ष में भेजने वाला दुनिया का चौथा देश बन जाएगा।" },
+            { category: "hindi", language: "hi-IN", author: "खेल जगत", source: { name: "Amar Ujala" }, title: "IPL रोमांच: मुंबई इंडियंस की भिड़ंत सनराइजर्स हैदराबाद से", description: "वानखेड़े स्टेडियम में आज शाम दोनों टीमों के बीच प्लेऑफ में जगह पक्की करने के लिए कांटे की टक्कर होगी।", urlToImage: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "इंडियन प्रीमियर लीग का रोमांच अपने चरम पर है। आज शाम मुंबई के वानखेड़े स्टेडियम में मुंबई इंडियंस और सनराइजर्स हैदराबाद के बीच महत्वपूर्ण मैच खेला जाएगा।\n\nदोनों ही टीमें इस समय शानदार फॉर्म में हैं और यह मैच प्लेऑफ की रेस के लिए बेहद महत्वपूर्ण है। दर्शकों को आज एक हाई-स्कोरिंग मैच देखने की उम्मीद है, क्योंकि मुंबई की पिच हमेशा से बल्लेबाजों के अनुकूल रही है।" },
+            { category: "hindi", language: "hi-IN", author: "राष्ट्रीय समाचार", source: { name: "Hindustan" }, title: "राष्ट्रीय राजमार्ग परियोजना: कुल्लू-मंडी सड़क मार्ग का चौड़ीकरण पूरा", description: "पर्यटकों और स्थानीय निवासियों को बड़ी राहत, नए राजमार्ग से यात्रा का समय काफी कम हो जाएगा।", urlToImage: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", fullText: "हिमाचल प्रदेश में बुनियादी ढांचे के विकास को एक बड़ी सफलता मिली है। कुल्लू से मंडी तक राष्ट्रीय राजमार्ग के चौड़ीकरण का कार्य आधिकारिक तौर पर पूरा कर लिया गया है।\n\nइस नई फोर-लेन सड़क से न केवल यातायात जाम की समस्या खत्म होगी, बल्कि दिल्ली और चंडीगढ़ से आने वाले पर्यटकों का सफर भी सुरक्षित और तेज हो जाएगा। मुख्यमंत्री ने आज इसका औपचारिक उद्घाटन किया।" }
+        ];
+
+        // 3. API FALLBACK & MASS GENERATOR ENGINE
+        // This engine ensures we always have 20-25 articles per tab, and the dates are dynamically 
+        // generated relative to the user's CURRENT clock (so news is never old).
+        // Developer Note: If you want to use a real API like NewsAPI.org, you would replace the logic 
+        // inside fetchNews() with a standard fetch() call and map the JSON response to renderNews().
+        
+        class NewsApp {
+            constructor() { 
+                this.init(); 
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.applyTheme();
+                this.checkAuth(); 
+            }
+
+            switchPage(targetPageId) {
+                // Hide all sections
+                document.querySelectorAll('.page-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                // Show target
+                document.getElementById(targetPageId).classList.add('active');
+                
+                // If switching to home, make sure navbar reflects "All" or current category
+                if(targetPageId === 'homeSection') {
+                    // re-trigger the current filter to refresh grid
+                    this.filterNews(state.currentCategory);
+                } else {
+                    // Remove active state from filter buttons if we aren't on home page
+                    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                }
+                
+                // Close mobile menu if open
+                document.getElementById('navLinks').classList.remove('active');
+                const icon = document.querySelector('#mobileMenuBtn i');
+                if(icon && icon.classList.contains('fa-times')) {
+                    icon.classList.replace('fa-times', 'fa-bars');
+                }
+                
+                window.scrollTo(0,0);
+            }
+
+            setupEventListeners() {
+                // Dark Mode Toggle
+                document.getElementById('themeToggle').addEventListener('click', () => {
+                    state.theme = state.theme === 'light' ? 'dark' : 'light';
+                    localStorage.setItem('nexus_theme', state.theme);
+                    this.applyTheme();
+                });
+
+                // Search Bar Input
+                document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                    if(e.key === 'Enter') {
+                        this.switchPage('homeSection');
+                        this.fetchNews(state.currentCategory, e.target.value);
+                    }
+                });
+
+                // Home Page Category Filter Buttons
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelector('.filter-btn.active')?.classList.remove('active');
+                        e.target.classList.add('active');
+                        this.filterNews(e.target.dataset.category);
+                    });
+                });
+            }
+
+            applyTheme() {
+                document.documentElement.setAttribute('data-theme', state.theme);
+                const icon = document.querySelector('#themeToggle i');
+                if(icon) {
+                    icon.className = state.theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+                }
+            }
+
+            // DYNAMIC "DAILY UPDATE" GENERATOR
+            generateMassFeed(category, query) {
+                let filteredBase = baseMockNews.filter(news => {
+                    if(query) {
+                        return news.title.toLowerCase().includes(query.toLowerCase()) || 
+                               news.description.toLowerCase().includes(query.toLowerCase());
+                    }
+                    if(category === 'general') return true;
+                    return news.category === category;
+                });
+
+                if(filteredBase.length === 0) return [];
+
+                let expandedFeed = [];
+                let counter = 1;
+                const currentTime = Date.now();
+
+                // Loop through to create at least 25 articles per tab
+                while (expandedFeed.length < 25) {
+                    filteredBase.forEach(baseArticle => {
+                        if (expandedFeed.length < 25) {
+                            let clone = JSON.parse(JSON.stringify(baseArticle));
+                            clone.id = parseInt(`${counter}${Math.floor(Math.random() * 1000)}`);
+                            
+                            // *** DAILY UPDATE LOGIC ***
+                            // Subtract hours based on loop index to simulate fresh news dropped over the last 24-48 hours.
+                            let pastTime = currentTime - (counter * 2 * 60 * 60 * 1000) - (Math.random() * 3600000); 
+                            clone.publishedAt = new Date(pastTime).toISOString();
+
+                            expandedFeed.push(clone);
+                            counter++;
+                        }
+                    });
+                }
+
+                window.generatedMockNews = expandedFeed;
+                return expandedFeed;
+            }
+
+            fetchNews(category = 'general', query = null) {
+                const grid = document.getElementById('newsGrid');
+                if(grid) grid.innerHTML = this.getSkeletonHTML(); 
+
+                // Simulate API call delay
+                setTimeout(() => {
+                    let finalArticles = this.generateMassFeed(category, query);
+                    this.renderNews(finalArticles);
+                }, 800); 
+            }
+
+            filterNews(category) {
+                state.currentCategory = category;
+                
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if(btn.dataset.category === category) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                this.fetchNews(category);
+            }
+
+            renderNews(articles) {
+                const grid = document.getElementById('newsGrid');
+                if(!grid) return;
+                
+                grid.innerHTML = '';
+                
+                if(articles.length === 0) {
+                    grid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 4rem 0;">
+                            <i class="fas fa-newspaper" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                            <h2 style="color: var(--text-main);">No News Found</h2>
+                            <p style="color: var(--text-muted); margin-top: 0.5rem;">Try adjusting your search query or selecting a different category.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                articles.forEach((article, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'news-card';
+                    card.style.animationDelay = `${Math.min(index * 0.05, 1)}s`; 
+                    
+                    const d = new Date(article.publishedAt);
+                    const timeString = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    // If it's today, show "Today", otherwise show Date
+                    const isToday = d.toDateString() === new Date().toDateString();
+                    const dateDisplay = isToday ? "Today" : d.toLocaleDateString();
+
+                    card.innerHTML = `
+                        <div class="card-image">
+                            <img src="${article.urlToImage}" alt="${article.title}">
+                            <span class="card-badge">${article.source.name}</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-date">
+                                <i class="far fa-clock"></i> ${dateDisplay} • ${timeString}
+                            </div>
+                            <h3 class="card-title">${article.title}</h3>
+                            <p class="card-desc">${article.description}</p>
+                            <div class="card-footer">
+                                <span style="font-size: 0.8rem; font-weight: 600;">
+                                    <i class="fas fa-user-edit"></i> ${article.author}
+                                </span>
+                                <button class="read-more" onclick="reader.openArticle(${article.id})">
+                                    Read Article <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            getSkeletonHTML() {
+                let html = '';
+                for(let i=0; i<8; i++) {
+                    html += `
+                    <div class="news-card" style="pointer-events: none;">
+                        <div class="card-image skeleton"></div>
+                        <div class="card-content">
+                            <div class="skeleton" style="height: 15px; width: 40%; margin-bottom: 15px; border-radius: 4px;"></div>
+                            <div class="skeleton" style="height: 24px; width: 90%; margin-bottom: 8px; border-radius: 4px;"></div>
+                            <div class="skeleton" style="height: 24px; width: 60%; margin-bottom: 20px; border-radius: 4px;"></div>
+                            <div class="skeleton" style="height: 40px; width: 100%; border-radius: 4px;"></div>
+                            <div style="margin-top: auto; border-top: 1px solid rgba(107, 114, 128, 0.1); padding-top: 15px; display: flex; justify-content: space-between;">
+                                <div class="skeleton" style="height: 15px; width: 30%; border-radius: 4px;"></div>
+                                <div class="skeleton" style="height: 15px; width: 30%; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+                return html;
+            }
+
+            checkAuth() {
+                const userProfile = document.getElementById('userProfile');
+                const userNameDisplay = document.getElementById('userNameDisplay');
+                const authModal = document.getElementById('authModal');
+                const loginBtn = document.getElementById('loginBtn');
+
+                if (!state.currentUser) {
+                    document.body.style.overflow = 'hidden'; 
+                    authModal.classList.add('active');
+                    userProfile.style.display = 'none';
+                    if(loginBtn) loginBtn.style.display = 'block';
+                } else {
+                    document.body.style.overflow = 'auto';
+                    authModal.classList.remove('active');
+                    userProfile.style.display = 'flex';
+                    userNameDisplay.textContent = state.currentUser.name.split(' ')[0];
+                    if(loginBtn) loginBtn.style.display = 'none';
+                    this.fetchNews(state.currentCategory);
+                }
+            }
+        }
+
+        // =========================================
+        // 4. AUTHENTICATION MANAGER 
+        // =========================================
+        class AuthManager {
+            constructor() { this.init(); }
+            
+            init() {
+                // Manual Login Button in Header
+                document.getElementById('loginBtn')?.addEventListener('click', () => {
+                    document.getElementById('authModal').classList.add('active');
+                });
+
+                document.querySelectorAll('.auth-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+                        
+                        if(e.target.dataset.tab === 'login') {
+                            document.getElementById('loginForm').style.display = 'block';
+                            document.getElementById('signupForm').style.display = 'none';
+                        } else {
+                            document.getElementById('loginForm').style.display = 'none';
+                            document.getElementById('signupForm').style.display = 'block';
+                        }
+                    });
+                });
+
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    localStorage.removeItem('nexus_user');
+                    state.currentUser = null;
+                    app.checkAuth(); 
+                });
+
+                document.getElementById('signupForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const user = { 
+                        name: document.getElementById('signupName').value, 
+                        email: document.getElementById('signupEmail').value, 
+                        password: document.getElementById('signupPass').value 
+                    };
+                    
+                    const users = JSON.parse(localStorage.getItem('nexus_users_db')) || [];
+                    if(users.find(u => u.email === user.email)) {
+                        alert('Error: This email address is already registered!');
+                        return;
+                    }
+                    
+                    users.push(user);
+                    localStorage.setItem('nexus_users_db', JSON.stringify(users));
+                    this.loginUser(user);
+                });
+
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('loginEmail').value;
+                    const pass = document.getElementById('loginPass').value;
+                    
+                    const users = JSON.parse(localStorage.getItem('nexus_users_db')) || [];
+                    const user = users.find(u => u.email === email && u.password === pass);
+
+                    if(user) {
+                        this.loginUser(user);
+                    } else {
+                        alert('Error: Invalid email or password.');
+                    }
+                });
+            }
+
+            loginUser(user) {
+                localStorage.setItem('nexus_user', JSON.stringify(user));
+                state.currentUser = user;
+                app.checkAuth();
+            }
+        }
+
+        // =========================================
+        // 5. TEXT-TO-SPEECH ARTICLE READER
+        // =========================================
+        class ArticleReader {
+            constructor() {
+                this.modal = document.getElementById('articleReaderModal');
+                this.currentArticleText = "";
+                this.currentLanguage = "en-US";
+                this.isSpeaking = false;
+                
+                document.getElementById('closeArticleBtn').addEventListener('click', () => this.closeArticle());
+                this.modal.addEventListener('click', (e) => { if (e.target === this.modal) this.closeArticle(); });
+                document.getElementById('playAudioBtn').addEventListener('click', () => this.toggleSpeech());
+            }
+
+            openArticle(id) {
+                const article = window.generatedMockNews.find(n => n.id === id);
+                if(!article) return;
+
+                document.getElementById('readTitle').textContent = article.title;
+                const d = new Date(article.publishedAt);
+                document.getElementById('readDate').textContent = `${d.toLocaleDateString()} - ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                document.getElementById('readAuthor').textContent = article.author;
+                document.getElementById('readBadge').textContent = article.category.toUpperCase();
+                document.getElementById('readImage').src = article.urlToImage;
+                document.getElementById('readContent').textContent = article.fullText;
+                
+                this.currentArticleText = `${article.title}. \n\n ${article.fullText}`;
+                this.currentLanguage = article.language || "en-US";
+                
+                document.body.style.overflow = 'hidden';
+                this.modal.classList.add('active');
+            }
+
+            closeArticle() {
+                this.modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+                this.stopSpeech(); 
+            }
+
+            toggleSpeech() {
+                const btn = document.getElementById('playAudioBtn');
+                if(this.isSpeaking) {
+                    this.stopSpeech();
+                } else {
+                    const utterance = new SpeechSynthesisUtterance(this.currentArticleText);
+                    utterance.lang = this.currentLanguage;
+                    utterance.onend = () => {
+                        this.isSpeaking = false;
+                        btn.innerHTML = '<i class="fas fa-play"></i> Listen';
+                    };
+                    window.speechSynthesis.speak(utterance);
+                    this.isSpeaking = true;
+                    btn.innerHTML = '<i class="fas fa-stop"></i> Stop';
+                }
+            }
+
+            stopSpeech() {
+                window.speechSynthesis.cancel();
+                this.isSpeaking = false;
+                document.getElementById('playAudioBtn').innerHTML = '<i class="fas fa-play"></i> Listen';
+            }
+        }
+
+        // Initialize App
+        const app = new NewsApp();
+        const auth = new AuthManager();
+        const reader = new ArticleReader();
+
+    </script>
+</body>
+</html>
